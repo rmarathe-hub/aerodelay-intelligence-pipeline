@@ -5,7 +5,7 @@
 | Path | Purpose |
 |------|---------|
 | `ingestion/weather/backfill.py` | Loop year-month × station: download + load |
-| `scripts/backfill_weather.sh` | Run full 2023–2025 backfill (45 stations) |
+| `scripts/backfill_weather.sh` | Run 2023–2025 backfill (**optional; not completed locally**) |
 | `docs/DAY6_CHECKLIST.md` | This checklist |
 
 ## Your manual steps
@@ -29,9 +29,9 @@ python -m ingestion.weather.backfill \
   --station ATL --no-download
 ```
 
-### 3. Full production backfill (long — needs network)
+### 3. Full production backfill (optional — long, needs network)
 
-Default **2023-01 → 2025-12**, all **45 stations**:
+Default **2023-01 → 2025-12**, all **45 stations**. **Not run to completion locally** — current load is sparse dev coverage only (see `docs/DATA_COVERAGE.md`):
 
 ```bash
 bash scripts/backfill_weather.sh
@@ -83,6 +83,10 @@ docker compose exec airflow-webserver airflow dags trigger ingest_weather \
 - [ ] Row counts queryable by `station` + `year_month`
 - [ ] Failures logged to `docs/ingest_issues.md`
 - [ ] Idempotent rerun of same station-month does not duplicate rows
+
+## Current local coverage (verified)
+
+Weather backfill tooling is implemented, but only **4 station-months** are loaded locally (ATL/ORD/LAX Jan 2025, DEN Feb 2025). Full 1,620 station-month backfill remains optional. See [`DATA_COVERAGE.md`](DATA_COVERAGE.md).
 
 ## Idempotency
 

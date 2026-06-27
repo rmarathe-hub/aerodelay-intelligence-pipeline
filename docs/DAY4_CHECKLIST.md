@@ -6,7 +6,7 @@
 |------|---------|
 | `ingestion/bts/backfill.py` | Loop year-month range: download + load |
 | `airflow/dags/ingest_bts.py` | Airflow DAG for one month ingest |
-| `scripts/backfill_bts.sh` | Run full 2023–2025 backfill |
+| `scripts/backfill_bts.sh` | Run 2023–2025 backfill (**optional; not completed locally**) |
 | `scripts/verify_ingest_bts_dag.sh` | Confirm DAG appears in Airflow |
 | `docs/ingest_issues.md` | Log failed months / downloads |
 | `ingestion/common/db.py` | Fixed Postgres host for Airflow vs laptop |
@@ -36,9 +36,9 @@ docker compose exec airflow-webserver airflow dags trigger ingest_bts \
   --conf '{"year": 2025, "month": 2}'
 ```
 
-### 3. Run multi-year backfill (long — needs network)
+### 3. Run multi-year backfill (optional — long, needs network)
 
-Default production scope **2023-01 → 2025-12**:
+Default production scope **2023-01 → 2025-12**. This is **not required for dev** and has **not been run to completion** on the current machine (only 2025-01 → 2025-04 loaded; see `docs/DATA_COVERAGE.md`):
 
 ```bash
 bash scripts/backfill_bts.sh
@@ -79,6 +79,10 @@ cat docs/ingest_issues.md
 - [ ] Backfill script runs for at least one new month beyond Jan 2025 sample
 - [ ] Row counts queryable by `year_month`
 - [ ] Failures logged to `docs/ingest_issues.md`
+
+## Current local coverage (verified)
+
+BTS backfill tooling is implemented, but the local warehouse holds **2025-01 through 2025-04 only** (~1.69M rows). Full 2023–2025 backfill remains optional. See [`DATA_COVERAGE.md`](DATA_COVERAGE.md).
 
 ## Idempotency
 

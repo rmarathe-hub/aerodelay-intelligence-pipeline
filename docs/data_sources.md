@@ -126,14 +126,27 @@ These samples confirmed:
 
 ---
 
-## Production scope
+## Current local warehouse coverage
+
+Verified Postgres load as of 2026-06-27. Backfill scripts target 2023–2025 but **have not been run to completion locally**.
+
+| Dataset | Loaded range | Approx. rows | Backfill status |
+|---------|--------------|--------------|-----------------|
+| BTS OTP | 2025-01 → 2025-04 | ~1.69M | Script implemented; partial load only |
+| Iowa Mesonet ASOS | ATL/ORD/LAX Jan 2025, DEN Feb 2025 | ~19.7K | Script implemented; sparse dev load only |
+
+Full details: [`DATA_COVERAGE.md`](DATA_COVERAGE.md)
+
+---
+
+## Production scope (target — not fully loaded locally)
 
 | Dataset | Airports / stations | Date range | Filter |
 |---------|---------------------|------------|--------|
 | BTS OTP | 45 origins (`docs/airports_45.csv`) | 2023–2025 | `Origin IN (45 airport codes)` |
 | Iowa Mesonet ASOS | 45 stations (`docs/airport_station_map.csv`) | 2023–2025 (+ buffer days) | Per-station download |
 
-Ingestion will be automated via Airflow DAGs (`ingest_bts`, `ingest_weather`) starting Week 1 Day 3+.
+Ingestion is automated via Airflow DAGs (`ingest_bts`, `ingest_weather`) and backfill scripts.
 
 ---
 
@@ -142,7 +155,7 @@ Ingestion will be automated via Airflow DAGs (`ingest_bts`, `ingest_weather`) st
 | Location | Contents | Git |
 |----------|----------|-----|
 | `data/samples/` | Manual development samples (BTS ZIP, weather CSVs) | **Ignored** |
-| `data/raw/` | Automated pipeline downloads (future) | **Ignored** |
+| `data/raw/` | Automated pipeline downloads | **Ignored** |
 | `raw.*` (Postgres) | Loaded raw tables in the warehouse | N/A (database) |
 
 Raw files can be large (BTS monthly CSVs are ~200+ MB uncompressed). They are never committed to Git.

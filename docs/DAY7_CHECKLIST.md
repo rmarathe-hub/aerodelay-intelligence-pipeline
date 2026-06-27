@@ -72,6 +72,17 @@ docker compose exec postgres psql -U aerodelay -d aerodelay -c \
 - [ ] `dbt test` passes (unique `flight_id`, unique `station`+`valid_utc`)
 - [ ] Cancelled flights have null delay fields in staging
 
+## Current local coverage (verified)
+
+dbt staging runs against **partial dev data**:
+
+| Model | Expected local scale |
+|-------|---------------------|
+| `staging.stg_bts__flights` | ~1.69M rows (2025-01 → 2025-04) |
+| `staging.stg_weather__observations` | ~19.6K rows (4 station-months) |
+
+Full 2023–2025 backfills are **not required** before intermediate models. See [`DATA_COVERAGE.md`](DATA_COVERAGE.md).
+
 ## Staging rules implemented
 
 **Flights (`stg_bts__flights`):**
@@ -96,4 +107,5 @@ git push
 
 ## Week 2 preview
 
-Intermediate models: flight departure context (UTC times) and weather join prep.
+Intermediate models: flight departure context (UTC times) and weather join prep.  
+Partial local data (documented in [`DATA_COVERAGE.md`](DATA_COVERAGE.md)) is sufficient to begin.

@@ -8,7 +8,10 @@ Column-level definitions for the **AeroDelay Intelligence Pipeline**. This docum
 | Phase | Flights | Weather |
 |-------|---------|---------|
 | Development sample | BTS January 2025 | ATL, ORD, LAX — January 2025 |
-| Production | 45 U.S. airports, 2023–2025 | 45 mapped stations, 2023–2025 |
+| **Current local warehouse** | **2025-01 → 2025-04 only (~1.69M rows)** | **ATL/ORD/LAX Jan 2025 + DEN Feb 2025 (~19.7K rows)** |
+| Production target | 45 U.S. airports, 2023–2025 | 45 mapped stations, 2023–2025 |
+
+See [`DATA_COVERAGE.md`](DATA_COVERAGE.md) for verified counts and on-disk files.
 
 Raw files live under `data/` and are **not committed to Git**.
 

@@ -2,7 +2,7 @@
 
 Production-style ELT pipeline analyzing flight delay risk across 45 major U.S. airports using BTS On-Time Performance data, ASOS/METAR weather, Airflow, dbt, Postgres, Docker, and Streamlit.
 
-**Status:** Week 1 Day 1 — local Docker skeleton
+**Status:** Ingestion pipeline + dbt staging in place — **partial local data load** (see [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md))
 
 ## Stack (local)
 
@@ -10,7 +10,16 @@ Production-style ELT pipeline analyzing flight delay risk across 45 major U.S. a
 |---------|----------------|
 | Postgres 15 | `localhost:5432` (db: `aerodelay`) |
 | Airflow UI | http://localhost:8080 (`admin` / `admin`) |
-| Schemas | `raw`, `meta` |
+| Schemas | `raw`, `meta`, `staging` |
+
+## Current data coverage (local)
+
+| Dataset | Loaded | Notes |
+|---------|--------|-------|
+| BTS flights | 2025-01 → 2025-04 (~1.69M rows) | Full 2023–2025 backfill script exists; **not run to completion** |
+| Weather | ATL/ORD/LAX Jan 2025 + DEN Feb 2025 (~19.7K rows) | Full 45×36-month backfill script exists; **not run to completion** |
+
+Details: [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md)
 
 ## Quickstart (Day 1)
 
@@ -59,7 +68,9 @@ docs/                  Data dictionary, architecture
 scripts/               dev_up, health checks
 ```
 
-## Data sources (upcoming)
+## Data sources
 
-- **BTS On-Time Performance** — monthly flight records
-- **ASOS/METAR** — airport weather observations (source TBD Day 2)
+- **BTS On-Time Performance** — monthly flight records (partial 2025 load locally; full 2023–2025 via backfill)
+- **ASOS/METAR** — airport weather observations (sparse dev load; full backfill available)
+
+Coverage details: [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md)

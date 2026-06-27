@@ -1,6 +1,8 @@
 # BTS / Weather ingest issues log
 
-Issues encountered during automated or manual ingest. Each failed month/download is appended by `ingestion/bts/backfill.py`.
+Issues encountered during automated or manual ingest. Failed runs are appended by `ingestion/bts/backfill.py` and `ingestion/weather/backfill.py`.
+
+**Note:** No failures logged as of 2026-06-27. Local backfills for full 2023–2025 scope are **not complete** — see [`DATA_COVERAGE.md`](DATA_COVERAGE.md).
 
 ## Format
 

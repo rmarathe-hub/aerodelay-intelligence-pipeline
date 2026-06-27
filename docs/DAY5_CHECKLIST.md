@@ -96,6 +96,10 @@ python -m ingestion.weather.load --year 2025 --month 1 --station ATL
 - [ ] Rerun same station-month → no duplicate rows
 - [ ] `ingest_weather` DAG visible in Airflow (no import errors)
 
+## Current local coverage (verified)
+
+Weather ingest tooling is implemented, but the local warehouse holds only **ATL/ORD/LAX Jan 2025 + DEN Feb 2025** (~19.7K rows). Full 45-station backfill is optional. See [`DATA_COVERAGE.md`](DATA_COVERAGE.md).
+
 ## Idempotency rule
 
 Reload deletes all rows for `(station, year_month)` before insert:
