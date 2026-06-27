@@ -72,6 +72,36 @@ Full production backfill (1,620 station-months) has **not** been run locally.
 
 ---
 
+## Intermediate (dbt)
+
+Last verified: 2026-06-27
+
+| Model | Rows | Notes |
+|-------|------|-------|
+| `intermediate.dim_airports` | 45 | All origins with IANA timezone + weather station |
+| `intermediate.int_flights__departure_context` | 1,686,378 | Matches staging; `dep_time_utc` 100% populated |
+| `intermediate.int_weather__observations_enriched` | 19,600 | Matches staging; ATL/ORD/LAX/DEN mapped |
+
+### Flight departure time split
+
+| dep_time_source | Rows |
+|-----------------|------|
+| actual | 1,661,187 |
+| scheduled | 25,191 (cancelled flights) |
+
+### Enriched weather by airport
+
+| airport_code | Rows |
+|--------------|------|
+| ATL | 9,415 |
+| DEN | 8,496 |
+| ORD | 895 |
+| LAX | 794 |
+
+All dbt intermediate tests pass. Join feasibility analyses (Day 13) confirm ≥95% candidate match within ±2h on loaded station-months. See `docs/weather_join_methodology.md`.
+
+---
+
 ## Data folder structure (correct)
 
 ```
