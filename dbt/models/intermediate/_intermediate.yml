@@ -78,3 +78,26 @@ models:
           combination_of_columns:
             - airport_code
             - valid_utc
+
+  - name: int_flights__weather_at_departure
+    description: >-
+      Flights joined to nearest ASOS observation at origin within ±weather_join_window_hours
+      of dep_time_utc. Tie-break prefers obs at/before departure, then latest loaded_at.
+    columns:
+      - name: flight_id
+        tests:
+          - unique
+          - not_null
+      - name: dep_time_utc
+        tests:
+          - not_null
+      - name: weather_match_status
+        description: matched when nearest obs found in window; else no_obs_in_window
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['matched', 'no_obs_in_window']
+      - name: weather_valid_utc
+        description: Selected observation timestamp (null when no match)
+      - name: weather_obs_lag_minutes
+        description: Minutes from obs to dep; negative means obs after departure

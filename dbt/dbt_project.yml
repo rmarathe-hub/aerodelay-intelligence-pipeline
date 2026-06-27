@@ -30,3 +30,4 @@ seeds:
 vars:
   missing_token: "M"
   trace_token: "T"
+  weather_join_window_hours: 2
