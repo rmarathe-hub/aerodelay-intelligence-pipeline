@@ -1,0 +1,32 @@
+version: 2
+
+seeds:
+  - name: airport_timezones
+    description: IANA timezone for each of the 45 project airports (BTS local time conversion)
+    columns:
+      - name: airport_code
+        tests:
+          - unique
+          - not_null
+      - name: timezone
+        tests:
+          - not_null
+
+  - name: airports_45
+    description: Copy of docs/airports_45.csv for dbt reference (canonical source is docs/)
+    columns:
+      - name: airport_code
+        tests:
+          - unique
+          - not_null
+
+  - name: airport_station_map
+    description: Copy of docs/airport_station_map.csv for dbt reference (canonical source is docs/)
+    columns:
+      - name: airport_code
+        tests:
+          - unique
+          - not_null
+      - name: weather_station_id
+        tests:
+          - not_null

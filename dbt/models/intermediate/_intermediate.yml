@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: dim_airports
+    description: Airport reference dimension with IANA timezone and weather station mapping
+    columns:
+      - name: airport_code
+        description: IATA airport code
+        tests:
+          - unique
+          - not_null
+      - name: timezone
+        description: IANA timezone for BTS local time → UTC conversion
+        tests:
+          - not_null
+      - name: weather_station_id
+        description: Iowa Mesonet ASOS station ID for weather joins
+        tests:
+          - not_null
+
+  - name: int_flights__departure_context
+    description: >-
+      Flight departure context with scheduled/actual local and UTC times.
+      dep_time_utc uses actual departure when available (non-cancelled), else scheduled.
+    columns:
+      - name: flight_id
+        tests:
+          - unique
+          - not_null
+      - name: origin
+        tests:
+          - not_null
+      - name: origin_timezone
+        tests:
+          - not_null
+      - name: flight_date
+        tests:
+          - not_null
+      - name: crs_dep_time_local
+        description: Scheduled departure as local wall-clock timestamp
+      - name: crs_dep_time_utc
+        description: Scheduled departure converted to UTC
+      - name: dep_time_utc
+        description: Weather-join departure time in UTC (actual when available, else scheduled)
+      - name: dep_time_source
+        description: Whether dep_time_utc came from actual or scheduled departure
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['actual', 'scheduled']
+
+  - name: int_weather__observations_enriched
+    description: >-
+      ASOS/METAR observations enriched with airport codes for flight joins.
+      One row per (airport_code, valid_utc); station maps 1:1 via dim_airports.
+    columns:
+      - name: weather_station_id
+        tests:
+          - not_null
+      - name: airport_code
+        description: IATA airport code for joining to flight origin
+        tests:
+          - not_null
+      - name: airport_timezone
+        description: IANA timezone for the airport (valid_utc is already UTC)
+        tests:
+          - not_null
+      - name: valid_utc
+        description: Observation timestamp in UTC
+        tests:
+          - not_null
+      - name: temperature_f
+        description: Air temperature in Fahrenheit
+      - name: precip_1hr_inches
+        description: One-hour precipitation in inches
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - airport_code
+            - valid_utc

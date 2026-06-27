@@ -19,6 +19,13 @@ models:
   aerodelay:
     staging:
       +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+
+seeds:
+  aerodelay:
+    +schema: intermediate
 
 vars:
   missing_token: "M"
