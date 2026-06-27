@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_bts__flights
+    description: Typed and cleaned BTS flight records with cancellation-aware delay fields
+    columns:
+      - name: flight_id
+        description: Surrogate key from airline, flight number, origin, date, scheduled dep time
+        tests:
+          - unique
+          - not_null
+      - name: reporting_airline
+        tests:
+          - not_null
+      - name: origin
+        tests:
+          - not_null
+      - name: flight_date
+        tests:
+          - not_null
+      - name: is_cancelled
+        tests:
+          - not_null
+      - name: is_diverted
+        tests:
+          - not_null
+
+  - name: stg_weather__observations
+    description: Typed ASOS/METAR observations deduped to one row per station and valid_utc
+    columns:
+      - name: station
+        tests:
+          - not_null
+      - name: valid_utc
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - station
+            - valid_utc

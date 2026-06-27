@@ -1,0 +1,25 @@
+name: aerodelay
+version: 1.0.0
+config-version: 2
+
+profile: aerodelay
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - target
+  - dbt_packages
+
+models:
+  aerodelay:
+    staging:
+      +materialized: view
+
+vars:
+  missing_token: "M"
+  trace_token: "T"

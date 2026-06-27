@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Landing zone populated by Python ingestion scripts
+    schema: raw
+    tables:
+      - name: bts_flights
+        description: BTS On-Time Performance monthly flight records
+      - name: weather_observations
+        description: Iowa Mesonet ASOS/METAR station observations

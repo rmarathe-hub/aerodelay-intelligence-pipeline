@@ -1,0 +1,12 @@
+aerodelay:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST_LOCAL', 'localhost') }}"
+      user: "{{ env_var('POSTGRES_USER', 'aerodelay') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | as_number }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'aerodelay') }}"
+      schema: staging
+      threads: 4
