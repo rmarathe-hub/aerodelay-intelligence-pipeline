@@ -1,0 +1,22 @@
+select
+    flight_id,
+    reporting_airline,
+    flight_number,
+    origin,
+    dest,
+    flight_date,
+    dep_time_utc,
+    dep_time_source,
+    origin_timezone,
+    dep_delay_minutes,
+    is_dep_delay_15_plus,
+    is_cancelled,
+    is_diverted,
+    weather_match_status,
+    weather_valid_utc,
+    weather_obs_lag_minutes,
+    temperature_f,
+    precip_1hr_inches,
+    wind_speed_knots,
+    visibility_miles
+from {{ ref('int_flights__weather_at_departure') }}

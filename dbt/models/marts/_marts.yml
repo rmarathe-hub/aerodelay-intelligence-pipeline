@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: fct_flights
+    description: >-
+      One row per flight with departure context, delay outcome, and nearest weather at origin.
+      Sourced from int_flights__weather_at_departure. Time features added Day 19.
+    columns:
+      - name: flight_id
+        description: Surrogate key; grain of this model
+        tests:
+          - unique
+          - not_null
+      - name: reporting_airline
+        tests:
+          - not_null
+      - name: origin
+        tests:
+          - not_null
+      - name: dest
+        tests:
+          - not_null
+      - name: flight_date
+        tests:
+          - not_null
+      - name: dep_time_utc
+        description: Weather-join departure anchor in UTC
+        tests:
+          - not_null
+      - name: dep_time_source
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['actual', 'scheduled']
+      - name: is_cancelled
+        tests:
+          - not_null
+      - name: is_diverted
+        tests:
+          - not_null
+      - name: weather_match_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['matched', 'no_obs_in_window']
