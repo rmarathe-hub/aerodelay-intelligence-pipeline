@@ -12,6 +12,7 @@ __pycache__/
 .venv/
 .venv-dbt/
 .venv-dashboard/
+.venv-cloud-test/
 venv/
 env/
 *.egg-info/

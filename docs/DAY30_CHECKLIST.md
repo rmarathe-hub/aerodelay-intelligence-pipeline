@@ -38,8 +38,8 @@ git push origin main
 3. **Branch:** `main`
 4. **Main file path:** `dashboard/app.py`
 5. **App URL (optional):** e.g. `aerodelay-intel`
-6. **Advanced settings → Python version:** 3.12 (or 3.11+)
-7. **Requirements file:** `requirements.txt` (repo root)
+6. **Advanced settings → Python version:** **3.11** (required — Cloud ignores `runtime.txt`; must pick in UI)
+7. **Requirements file:** `dashboard/requirements.txt` (or root `requirements.txt` — both resolve to same pins)
 8. **Secrets:** leave empty (parquet mode needs no Postgres)
 9. **Deploy**
 
@@ -71,6 +71,8 @@ Copy the deployed URL and add to README:
 | Parquet not found | Commit `dashboard/demo_data/*.parquet`; paths are relative to repo root |
 | Theme not applied | Root `.streamlit/config.toml` should be committed |
 | Build fails on psycopg2 | Normal on Cloud — parquet mode never connects; dep still installs |
+| `cmake` / pyarrow source build | Set **Python 3.11** in app Advanced settings; `pyarrow==16.1.0` has wheels for 3.11 |
+| Still on Python 3.14 despite settings | Delete app, redeploy, re-select **3.11** in Advanced settings |
 
 ## Files for cloud deploy
 

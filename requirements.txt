@@ -1,1 +1,2 @@
+# Streamlit Community Cloud: set Python 3.11 in Advanced settings (runtime.txt is not read by Cloud).
 -r dashboard/requirements.txt
