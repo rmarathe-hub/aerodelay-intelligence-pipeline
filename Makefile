@@ -1,4 +1,4 @@
-.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-test
+.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025
 
 up:
 	bash scripts/dev_up.sh
@@ -64,5 +64,11 @@ dbt-run:
 dbt-run-intermediate:
 	bash scripts/dbt_run.sh run --select intermediate+
 
+dbt-run-marts:
+	bash scripts/dbt_run.sh run --select marts+
+
 dbt-test:
 	bash scripts/dbt_run.sh test
+
+dbt-bulletproof-jan2025:
+	bash scripts/bulletproof_jan2025.sh

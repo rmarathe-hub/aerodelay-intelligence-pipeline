@@ -68,6 +68,8 @@ typed as (
         loaded_at,
         run_id
     from source
+    where 1 = 1
+        {{ dev_year_month_filter() }}
 ),
 
 with_keys as (

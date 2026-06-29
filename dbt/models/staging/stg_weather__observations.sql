@@ -35,6 +35,7 @@ typed as (
     from source
     where {{ clean_text('station') }} is not null
       and {{ clean_text('valid') }} is not null
+      {{ dev_year_month_filter() }}
 ),
 
 deduped as (

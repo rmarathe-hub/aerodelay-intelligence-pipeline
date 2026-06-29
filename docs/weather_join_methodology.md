@@ -1,9 +1,9 @@
-# Weather Join Methodology (Draft)
+# Weather Join Methodology
 
-**Status:** Draft for Week 3 implementation  
-**Last updated:** 2026-06-27
+**Status:** Implemented (Week 3)  
+**Last updated:** 2026-06-28
 
-This document defines how flight records will be joined to ASOS/METAR weather observations at departure. Week 2 built the **join-ready inputs**; Week 3 implements the actual join model (`int_flights__weather_at_departure`).
+This document defines how flight records are joined to ASOS/METAR weather observations at departure. Implemented in `intermediate.int_flights__weather_at_departure` and exposed via `marts.fct_flights`.
 
 ---
 
@@ -43,34 +43,69 @@ From candidates, pick **one** row using this priority:
 | 2 | **Tie-break:** prefer observation **at or before** departure (`w.valid_utc <= f.dep_time_utc`) over one after |
 | 3 | **Further tie-break:** most recent `loaded_at` / latest ingest (dedupe safety) |
 
-If no candidate exists within the window, the flight gets **no weather match** (`weather_valid_utc = NULL`, weather metrics null).
+If no candidate exists within the window, the flight gets **no weather match** (`weather_valid_utc = NULL`, weather metrics null, `weather_match_status = 'no_obs_in_window'`).
 
 ---
 
 ## Search window
 
-| Parameter | Proposed default | Rationale |
-|-----------|------------------|-----------|
-| `weather_join_window_hours` | **2** | Day 13 feasibility used ±2h; ASOS reports every ~5–20 min when fully loaded |
-| Pre-departure only variant | Optional flag | Some models prefer `w.valid_utc <= dep_time_utc` only (no future obs) — defer to Week 3 eval |
+| Parameter | Default | Config |
+|-----------|---------|--------|
+| `weather_join_window_hours` | **2** | dbt var in `dbt/dbt_project.yml` |
 
-Window is symmetric by default:  
-`w.valid_utc between dep_time_utc - interval '2 hours' and dep_time_utc + interval '2 hours'`
+Window is symmetric:  
+`w.valid_utc between dep_time_utc - interval 'N hours' and dep_time_utc + interval 'N hours'`
 
 ---
 
-## Output columns (planned)
+## Implementation
 
-Minimum columns on `int_flights__weather_at_departure`:
+**Model:** `dbt/models/intermediate/int_flights__weather_at_departure.sql`
+
+```sql
+-- Candidate join on origin + window
+-- row_number() over (partition by flight_id order by
+--   obs_delta_seconds asc,
+--   obs_after_dep_rank asc,   -- prefer obs at/before dep
+--   weather_loaded_at desc)
+-- Left join best match back to all flights
+```
+
+**Mart:** `dbt/models/marts/fct_flights.sql` selects core flight, delay, weather, time features, and modeling flags.
+
+**Tests:**
+- One row per `flight_id`; row count = departure context
+- Matched rows within window (`assert_weather_join_window`)
+- Match rate ≥90% on **loaded station-months only** (`assert_weather_join_coverage_loaded_months`)
+
+Global all-flight match rate is **not** gated until full weather backfill.
+
+---
+
+## Output columns
+
+On `int_flights__weather_at_departure` / `marts.fct_flights`:
 
 | Column | Description |
 |--------|-------------|
-| `flight_id` | From flights (PK) |
+| `flight_id` | PK |
 | `dep_time_utc` | Join anchor time |
 | `weather_valid_utc` | Selected observation timestamp |
 | `weather_obs_lag_minutes` | `(dep_time_utc - weather_valid_utc)` in minutes; negative = obs after dep |
 | `weather_match_status` | `matched` / `no_obs_in_window` |
-| Weather metrics | Pass-through from enriched weather (temp, precip, wind, visibility, etc.) |
+| `has_departure_weather` | Boolean flag on `fct_flights` |
+| Weather metrics | temp, precip, wind, visibility, pressure, etc. |
+
+---
+
+## Modeling grain (`fct_flights`)
+
+| Flag | Rule |
+|------|------|
+| `is_analysis_eligible` | `not is_cancelled and not is_diverted` |
+| `has_departure_weather` | `weather_match_status = 'matched'` |
+
+Use both flags for weather-conditioned delay analysis. All flights remain in the table.
 
 ---
 
@@ -78,35 +113,34 @@ Minimum columns on `int_flights__weather_at_departure`:
 
 | Case | Handling |
 |------|----------|
-| Cancelled flight | Still has `dep_time_utc` from scheduled time; join proceeds unless excluded in mart logic |
-| Missing `dep_time_utc` | Exclude from join (<1% today; should be zero after intermediate tests) |
-| Sparse weather months (ORD/LAX samples) | Join succeeds when any obs in window; coverage improves with full backfill |
-| Month-end weather gaps | Flights on days after last obs have no match — data coverage issue, not join bug |
-| Duplicate obs same timestamp | Staging dedupes on `(station, valid_utc)`; enriched model inherits 1:1 grain |
+| Cancelled flight | Join proceeds; excluded from analysis via `is_analysis_eligible` |
+| Missing `dep_time_utc` | Zero rows in current data (intermediate tests enforce) |
+| Sparse weather months (ORD/LAX samples) | Join succeeds when obs in window; wider lag distribution |
+| Month-end weather gaps | No match — data coverage issue, not join bug |
+| Duplicate obs same timestamp | Staging dedupes on `(station, valid_utc)` |
 
 ---
 
-## Validation (Week 2 completed)
+## Validation results
 
-Day 13 analyses confirmed **≥95% candidate coverage** (obs exists within ±2h) for loaded station-months:
+### Day 13 feasibility (candidate obs within ±2h)
 
-- ATL Jan 2025: 95.99%
-- ORD Jan 2025: 96.21%
-- LAX Jan 2025: 95.80%
-- DEN Feb 2025: 95.23%
+| Airport | Month | Match % |
+|---------|-------|---------|
+| ATL | 2025-01 | 95.99% |
+| ORD | 2025-01 | 96.21% |
+| LAX | 2025-01 | 95.80% |
+| DEN | 2025-02 | 95.23% |
 
-Unmatched flights cluster on calendar days after weather files end (partial month downloads). Full weather backfill is expected to close those gaps.
+### Day 17 nearest-obs join (identical to feasibility)
 
-See `dbt/analyses/join_feasibility_*.sql` and `docs/DAY13_CHECKLIST.md`.
+Nearest-obs match rates equal Day 13 exactly — every candidate flight gets a nearest match.
 
----
+**Lag distribution (matched flights):** ATL/DEN median 0 min; ORD/LAX wider p90 (~23 min) due to sparse hourly samples. No ±300 min timezone offset.
 
-## Week 3 implementation notes
+**Unmatched flights:** Cluster on month-end days (Jan 30–31, Feb 27–28) when weather files end early.
 
-1. Implement as dbt model using window functions (`row_number()` over partition by `flight_id` ordered by delta, tie-break rules).
-2. Add tests: at most one weather row per flight; `weather_valid_utc` within window when matched.
-3. Re-run join feasibility on matched vs candidate rates after nearest-obs logic ships.
-4. Consider dbt var for window hours to support sensitivity analysis.
+See `dbt/analyses/weather_join_*.sql` and `docs/DAY17_CHECKLIST.md`.
 
 ---
 
@@ -114,5 +148,7 @@ See `dbt/analyses/join_feasibility_*.sql` and `docs/DAY13_CHECKLIST.md`.
 
 - `intermediate.int_flights__departure_context` — departure time logic
 - `intermediate.int_weather__observations_enriched` — airport-mapped weather
-- `docs/DAY13_CHECKLIST.md` — feasibility results
-- `docs/DATA_COVERAGE.md` — local row counts and partial load truth
+- `marts.fct_flights` — consumption layer
+- `docs/DATA_COVERAGE.md` — local row counts
+- `docs/DAY13_CHECKLIST.md` — feasibility baseline
+- `docs/DAY17_CHECKLIST.md` — join validation

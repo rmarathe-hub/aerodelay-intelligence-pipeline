@@ -3,8 +3,12 @@ version: 2
 models:
   - name: fct_flights
     description: >-
-      One row per flight with departure context, delay outcome, and nearest weather at origin.
-      Sourced from int_flights__weather_at_departure. Time features added Day 19.
+      One row per flight with departure context, delay outcome, nearest weather at origin,
+      time features, and modeling grain flags.
+
+      **Modeling grain:** filter `is_analysis_eligible = true` (not cancelled, not diverted).
+      For weather-conditioned analysis, also require `has_departure_weather = true`.
+      Exploratory queries may use all rows.
     columns:
       - name: flight_id
         description: Surrogate key; grain of this model
@@ -23,6 +27,9 @@ models:
       - name: flight_date
         tests:
           - not_null
+      - name: year_month
+        tests:
+          - not_null
       - name: dep_time_utc
         description: Weather-join departure anchor in UTC
         tests:
@@ -32,10 +39,32 @@ models:
           - not_null
           - accepted_values:
               values: ['actual', 'scheduled']
+      - name: dep_hour_utc
+        description: Departure hour in UTC (0-23)
+        tests:
+          - not_null
+      - name: dep_dow
+        description: ISO day of week from dep_time_utc (1=Monday, 7=Sunday)
+        tests:
+          - not_null
+      - name: dep_month
+        description: Calendar month from dep_time_utc (1-12)
+        tests:
+          - not_null
+      - name: is_dep_delay_15_plus
+        description: Primary binary delay target (15+ minute departure delay)
       - name: is_cancelled
         tests:
           - not_null
       - name: is_diverted
+        tests:
+          - not_null
+      - name: is_analysis_eligible
+        description: True when flight is not cancelled and not diverted; use for modeling grain
+        tests:
+          - not_null
+      - name: has_departure_weather
+        description: True when nearest weather obs matched within join window
         tests:
           - not_null
       - name: weather_match_status
@@ -43,3 +72,110 @@ models:
           - not_null
           - accepted_values:
               values: ['matched', 'no_obs_in_window']
+
+  - name: agg_delay_by_airport_hour
+    description: >-
+      Departure delay rates by origin airport and UTC hour for analysis-eligible flights
+      (not cancelled, not diverted). Grain: one row per (origin, dep_hour_utc).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - origin
+            - dep_hour_utc
+    columns:
+      - name: origin
+        tests:
+          - not_null
+      - name: dep_hour_utc
+        description: Departure hour in UTC (0-23)
+        tests:
+          - not_null
+      - name: flight_count
+        tests:
+          - not_null
+      - name: delayed_count
+        description: Flights with 15+ minute departure delay
+        tests:
+          - not_null
+      - name: delay_rate_15
+        description: Share of flights delayed 15+ minutes (0-1)
+        tests:
+          - not_null
+      - name: avg_dep_delay_minutes
+        description: Mean departure delay in minutes across eligible flights
+
+  - name: agg_delay_by_weather_bucket
+    description: >-
+      Departure delay rates by origin airport and departure weather bins (wind speed,
+      1-hour precip, visibility). Analysis-eligible flights with matched departure weather only.
+      Grain: one row per (origin, wind_speed_bucket, precip_bucket, visibility_bucket).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - origin
+            - wind_speed_bucket
+            - precip_bucket
+            - visibility_bucket
+    columns:
+      - name: origin
+        tests:
+          - not_null
+      - name: wind_speed_bucket
+        description: Wind speed at departure (knots) grouped into calm/light/moderate/strong bins
+        tests:
+          - not_null
+      - name: precip_bucket
+        description: 1-hour precipitation amount grouped into none/light/moderate/heavy bins
+        tests:
+          - not_null
+      - name: visibility_bucket
+        description: Visibility at departure grouped into low/medium/high bins
+        tests:
+          - not_null
+      - name: flight_count
+        tests:
+          - not_null
+      - name: delayed_count
+        description: Flights with 15+ minute departure delay
+        tests:
+          - not_null
+      - name: delay_rate_15
+        description: Share of flights delayed 15+ minutes (0-1)
+        tests:
+          - not_null
+      - name: avg_dep_delay_minutes
+        description: Mean departure delay in minutes across eligible flights with weather
+
+  - name: agg_delay_by_carrier_route
+    description: >-
+      Departure delay rates by reporting airline and origin-destination route for
+      analysis-eligible flights. Grain: one row per (reporting_airline, origin, dest).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - reporting_airline
+            - origin
+            - dest
+    columns:
+      - name: reporting_airline
+        tests:
+          - not_null
+      - name: origin
+        tests:
+          - not_null
+      - name: dest
+        tests:
+          - not_null
+      - name: flight_count
+        tests:
+          - not_null
+      - name: delayed_count
+        description: Flights with 15+ minute departure delay
+        tests:
+          - not_null
+      - name: delay_rate_15
+        description: Share of flights delayed 15+ minutes (0-1)
+        tests:
+          - not_null
+      - name: avg_dep_delay_minutes
+        description: Mean departure delay in minutes across eligible flights on the route

@@ -22,9 +22,13 @@ models:
     intermediate:
       +schema: intermediate
       +materialized: view
+      int_flights__weather_at_departure:
+        +materialized: table
     marts:
       +schema: marts
       +materialized: view
+      fct_flights:
+        +materialized: table
 
 seeds:
   aerodelay:
@@ -34,3 +38,5 @@ vars:
   missing_token: "M"
   trace_token: "T"
   weather_join_window_hours: 2
+  # Set via --vars '{dev_year_month: "2025-01"}' for local 1-month proof runs
+  dev_year_month: null

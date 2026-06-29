@@ -1,148 +1,154 @@
 # Data Coverage — Current Local State
 
-Verified warehouse and on-disk coverage for this development environment.  
-**Production target scope** (2023–2025, 45 airports/stations) is implemented by backfill scripts but **not fully loaded locally**.
+Verified warehouse and on-disk coverage for this development environment.
 
-Last verified: 2026-06-27
+Last verified: 2026-06-29
 
 ---
 
 ## Summary
 
-| Layer | BTS flights | Weather observations |
-|-------|-------------|----------------------|
-| **Production target** | 45 origins, 2023–2025 | 45 stations, 2023–2025 (36 months × 45 stations) |
-| **Backfill scripts** | Implemented (`scripts/backfill_bts.sh`) | Implemented (`scripts/backfill_weather.sh`) |
-| **Local backfill status** | **Not complete** | **Not complete** |
-| **Currently loaded in Postgres** | **2025-01 → 2025-04 only** (~1.69M rows) | **4 station-months** (~19.7K rows) |
-| **Safe for next dev phase?** | Yes — partial dev data is sufficient for intermediate/dbt work | Yes |
+| Layer | Production target | Raw Postgres (full backfill) | dbt dev sample (Jan 2025) |
+|-------|-------------------|------------------------------|---------------------------|
+| **BTS flights** | 45 origins, 2023–2025 | **15.9M rows**, 36 months | **409K rows** (`2025-01`) |
+| **Weather obs** | 45 stations, 36 months | **14.4M rows** | **403K rows** (`2025-01`) |
+| **Join + fct table** | Full history | Not materialized locally | **409K rows** (tables on disk) |
+| **Agg marts** | Full or sample | Views over sample tables | **1K / 634 / 6.3K rows** |
+
+**Raw ingest is complete.** Local dbt iteration uses **`dev_year_month: "2025-01"`** (Plan B) for fast builds (~3 min join, tests in seconds).
 
 ---
 
 ## BTS — `raw.bts_flights`
 
-### Loaded in Postgres
+| Metric | Value |
+|--------|-------|
+| Total rows | **15,866,662** |
+| Months | **2023-01 → 2025-12** (36) |
+| Origins | 45 airports |
 
-| year_month | Approx. rows |
-|------------|--------------|
-| 2025-01 | 408,974 |
-| 2025-02 | 381,883 |
-| 2025-03 | 453,255 |
-| 2025-04 | 442,266 |
-| **Total** | **~1,686,378** |
-
-No 2023 or 2024 months are loaded locally.
-
-### On disk (`data/raw/bts/`)
-
-Only automated downloads for **2025-02, 2025-03, 2025-04** are present.  
-January 2025 was loaded from `data/samples/` (manual sample ZIP).
-
-### Staging
-
-`staging.stg_bts__flights` mirrors raw row count (~1.69M). dbt tests pass.
+Backfill script: `bash scripts/backfill_bts.sh`
 
 ---
 
 ## Weather — `raw.weather_observations`
 
-### Loaded in Postgres
+| Metric | Value |
+|--------|-------|
+| Total rows | **14,353,070** |
+| Station-months | **36 × 45 = 1,620** |
+| Index | `idx_weather_obs_station_valid` on `(station, valid)` |
 
-| Station | year_month | Rows | Source |
-|---------|------------|------|--------|
-| ATL | 2025-01 | 9,448 | IEM download (`data/raw/weather/weather_ATL_2025_01.csv`; overwrote 817-row sample) |
-| ORD | 2025-01 | 895 | Manual sample |
-| LAX | 2025-01 | 794 | Manual sample |
-| DEN | 2025-02 | 8,530 | Day 6 backfill verification download |
-| **Total** | | **~19,667** | |
+Backfill script: `bash scripts/backfill_weather.sh`
 
-Full production backfill (1,620 station-months) has **not** been run locally.
-
-### On disk
-
-| Path | Origin |
-|------|--------|
-| `data/samples/weather_*` | Manual Day 2 samples (ATL, ORD, LAX Jan 2025) |
-| `data/raw/weather/weather_ATL_2025_01.csv` | Automated IEM download (Airflow / ingest test) |
-| `data/raw/weather/weather_DEN_2025_02.csv` | Automated IEM download (backfill verification) |
-
-### Staging
-
-`staging.stg_weather__observations` — ~19,600 rows after dedupe. dbt tests pass.
+**Known issue:** HNL maps to IEM station `HNL` but ASOS data uses **`PHNL`** — 0% weather match for HNL until `airport_station_map.csv` is updated.
 
 ---
 
-## Intermediate (dbt)
+## dbt dev sample (Jan 2025)
 
-Last verified: 2026-06-27
+Materialized with:
 
-| Model | Rows | Notes |
-|-------|------|-------|
-| `intermediate.dim_airports` | 45 | All origins with IANA timezone + weather station |
-| `intermediate.int_flights__departure_context` | 1,686,378 | Matches staging; `dep_time_utc` 100% populated |
-| `intermediate.int_weather__observations_enriched` | 19,600 | Matches staging; ATL/ORD/LAX/DEN mapped |
+```bash
+bash scripts/dbt_run.sh run \
+  --select +int_flights__weather_at_departure fct_flights \
+  --full-refresh --vars '{dev_year_month: "2025-01"}' --threads 1
+```
 
-### Flight departure time split
+| Object | Type | Rows | Size |
+|--------|------|------|------|
+| `staging.stg_bts__flights` | view (filtered) | 408,974 | — |
+| `staging.stg_weather__observations` | view (filtered) | 402,697 | — |
+| `intermediate.int_flights__weather_at_departure` | **table** | 408,974 | 243 MB |
+| `marts.fct_flights` | **table** | 408,974 | 81 MB |
 
-| dep_time_source | Rows |
-|-----------------|------|
-| actual | 1,661,187 |
-| scheduled | 25,191 (cancelled flights) |
+### Weather join (Jan 2025)
 
-### Enriched weather by airport
+| Metric | Value |
+|--------|-------|
+| Total flights | 408,974 |
+| Matched | 388,542 (**95.0%**) |
+| Unmatched | 20,432 (5.0%) |
+| HNL only | 5,164 flights, **0%** matched (station mapping) |
+| All other airports | **≥95.7%** matched |
 
-| airport_code | Rows |
-|--------------|------|
-| ATL | 9,415 |
-| DEN | 8,496 |
-| ORD | 895 |
-| LAX | 794 |
+### Modeling grain (`marts.fct_flights`, Jan 2025)
 
-All dbt intermediate tests pass. Join feasibility analyses (Day 13) confirm ≥95% candidate match within ±2h on loaded station-months. See `docs/weather_join_methodology.md`.
+| is_analysis_eligible | has_departure_weather | Rows |
+|----------------------|-----------------------|------|
+| false | false | 316 |
+| false | true | 12,611 |
+| true | false | 20,116 |
+| true | true | **375,931** |
 
 ---
 
-## Data folder structure (correct)
+## Week 4 aggregation marts
+
+| Model | Grain | Rows (Jan 2025) |
+|-------|-------|-----------------|
+| `agg_delay_by_airport_hour` | origin + dep_hour_utc | 1,000 |
+| `agg_delay_by_weather_bucket` | origin + wind/precip/visibility bins | 634 |
+| `agg_delay_by_carrier_route` | airline + origin + dest | 6,273 |
+
+Analyses: `dbt/analyses/delay_by_*`, `weather_join_coverage_jan2025.sql`  
+Findings: `docs/DAY24_CHECKLIST.md`
+
+---
+
+## Bulletproof validation (Jan 2025 sample)
+
+One-time critical test pass (not full 71 tests):
+
+```bash
+bash scripts/bulletproof_jan2025.sh
+```
+
+**Last run:** 2026-06-29 — **33/33 PASS** in ~6s (join integrity, fct consistency, all agg tests, Jan 2025 coverage gate excluding HNL).
+
+Log: `logs/bulletproof_jan2025.log`
+
+---
+
+## Local dev workflow
+
+| Task | Command |
+|------|---------|
+| Rebuild sample tables | `bash scripts/dbt_run.sh run --select +int_flights__weather_at_departure fct_flights --full-refresh --vars '{dev_year_month: "2025-01"}' --threads 1` |
+| Run new agg | `bash scripts/dbt_run.sh run --select agg_delay_by_*` |
+| Test aggs only | `bash scripts/dbt_run.sh test --select agg_delay_by_* --threads 1` |
+| Bulletproof pass | `bash scripts/bulletproof_jan2025.sh` |
+
+**Do not** run `make dbt-test` (71 tests) on 16M rows locally.
+
+---
+
+## Full materialization (optional, deferred)
+
+Full 2023–2025 table materialize on Docker Mac takes **hours** (16M-row weather join). Options:
+
+- Overnight local run with index + RAM bump
+- Paid cloud VM with 8+ GB RAM
+- Keep portfolio on Jan 2025 sample (recommended)
+
+---
+
+## Data folder structure
 
 ```
 data/
 ├── samples/          # Manual dev samples (gitignored)
 └── raw/
-    ├── bts/          # Automated BTS ZIP downloads (gitignored)
-    └── weather/      # Automated IEM CSV downloads (gitignored)
+    ├── bts/          # BTS ZIP downloads (gitignored)
+    └── weather/      # IEM CSV downloads (gitignored)
 ```
 
-All of `data/` is gitignored. No raw or sample files are tracked by Git.
+All of `data/` is gitignored.
 
 ---
 
 ## Ingest logs
 
-- `meta.bts_ingest_log` — 8 successful runs (2025-01 through 2025-04; some months rerun for idempotency/DAG tests)
-- `meta.weather_ingest_log` — 16 successful runs (samples, Airflow trigger, backfill/idempotency tests)
-- `docs/ingest_issues.md` — no failures logged
-
----
-
-## What to run for full production load (optional, long)
-
-```bash
-# BTS — 2023-01 through 2025-12 (needs network, hours)
-bash scripts/backfill_bts.sh
-
-# Weather — 36 months × 45 stations (needs network, very long)
-bash scripts/backfill_weather.sh
-```
-
-Batch by year if preferred (see `docs/DAY6_CHECKLIST.md`).
-
----
-
-## Proceeding to intermediate models
-
-Partial dev coverage is **intentional and sufficient** for:
-
-- dbt intermediate models (UTC departure context)
-- Weather join prep and prototyping on ATL/ORD/LAX/DEN subsets
-
-Full backfill can run in parallel or overnight without blocking Week 2 work.
+- `meta.bts_ingest_log` — 36 months loaded (2023–2025)
+- `meta.weather_ingest_log` — 1,620 station-months loaded
+- `docs/ingest_issues.md` — check for HNL / download failures
