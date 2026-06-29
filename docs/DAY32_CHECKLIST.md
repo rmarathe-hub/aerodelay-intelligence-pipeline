@@ -36,8 +36,9 @@
 - CI does **not** use Docker Compose — only Postgres service container
 - Same test selection as `scripts/bulletproof_jan2025.sh` (minus docker row-count echo)
 - Full 71-test suite still **not** run in CI (by design)
+- **`dbt/seeds/*.csv` must be in Git** — root `.gitignore` ignores `*.csv` except `docs/` and `dbt/seeds/`
 
 ## Next (Day 33)
 
-- Portfolio polish — dashboard screenshot, repo topics
+- Portfolio polish — dashboard screenshot, repo topics — **Done** → `docs/DAY33_CHECKLIST.md`
 - Paste live Streamlit URL into README

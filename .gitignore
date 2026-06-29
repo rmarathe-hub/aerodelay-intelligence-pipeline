@@ -42,6 +42,7 @@ data/
 *.csv
 *.zip
 !docs/*.csv
+!dbt/seeds/*.csv
 
 # Logs and OS
 logs/

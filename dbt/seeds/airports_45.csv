@@ -1,0 +1,46 @@
+airport_code,airport_name,city,state,region,notes
+ATL,Hartsfield-Jackson Atlanta International,Atlanta,GA,Southeast,major hub; large metro airport
+LAX,Los Angeles International,Los Angeles,CA,West Coast,major hub; coastal weather; large metro airport
+ORD,Chicago O'Hare International,Chicago,IL,Midwest,major hub; snow/winter weather; large metro airport
+DFW,Dallas/Fort Worth International,Dallas-Fort Worth,TX,South,major hub; large metro airport
+DEN,Denver International,Denver,CO,Mountain West,major hub; snow/winter weather
+JFK,John F. Kennedy International,New York,NY,Northeast,major hub; coastal weather; large metro airport
+SFO,San Francisco International,San Francisco,CA,West Coast,major hub; coastal weather; large metro airport
+SEA,Seattle-Tacoma International,Seattle,WA,Pacific,coastal weather; large metro airport
+LAS,Harry Reid International,Las Vegas,NV,Mountain West,large metro airport
+MCO,Orlando International,Orlando,FL,Southeast,large metro airport
+CLT,Charlotte Douglas International,Charlotte,NC,Southeast,major hub
+EWR,Newark Liberty International,Newark,NJ,Northeast,major hub; large metro airport (NYC)
+PHX,Phoenix Sky Harbor International,Phoenix,AZ,Mountain West,large metro airport
+IAH,George Bush Intercontinental,Houston,TX,South,major hub; large metro airport
+MIA,Miami International,Miami,FL,Southeast,major hub; coastal weather
+BOS,Logan International,Boston,MA,Northeast,coastal weather; snow/winter weather; large metro airport
+MSP,Minneapolis-Saint Paul International,Minneapolis,MN,Midwest,major hub; snow/winter weather
+FLL,Fort Lauderdale-Hollywood International,Fort Lauderdale,FL,Southeast,coastal weather; secondary airport (South Florida)
+DTW,Detroit Metropolitan Wayne County,Detroit,MI,Midwest,major hub; snow/winter weather
+PHL,Philadelphia International,Philadelphia,PA,Northeast,large metro airport
+LGA,LaGuardia Airport,New York,NY,Northeast,secondary airport (NYC); large metro airport
+BWI,Baltimore/Washington International,Baltimore,MD,Northeast,large metro airport (DC/Baltimore)
+SLC,Salt Lake City International,Salt Lake City,UT,Mountain West,snow/winter weather
+SAN,San Diego International,San Diego,CA,West Coast,coastal weather
+IAD,Washington Dulles International,Washington,DC,Northeast,major hub; large metro airport (DC)
+DCA,Ronald Reagan Washington National,Arlington,VA,Northeast,secondary airport (DC metro)
+MDW,Chicago Midway International,Chicago,IL,Midwest,secondary airport; snow/winter weather
+TPA,Tampa International,Tampa,FL,Southeast,coastal weather
+HNL,Daniel K. Inouye International,Honolulu,HI,Pacific,coastal weather; useful delay/weather comparison airport
+PDX,Portland International,Portland,OR,Pacific,coastal weather
+DAL,Dallas Love Field,Dallas,TX,South,secondary airport (Dallas)
+AUS,Austin-Bergstrom International,Austin,TX,South,large metro airport
+BNA,Nashville International,Nashville,TN,Southeast,large metro airport
+STL,St. Louis Lambert International,St. Louis,MO,Midwest,large metro airport
+RDU,Raleigh-Durham International,Raleigh,NC,Southeast,growing hub market
+SMF,Sacramento International,Sacramento,CA,West Coast,secondary airport (Northern California)
+SJC,Norman Y. Mineta San Jose International,San Jose,CA,West Coast,secondary airport (Bay Area)
+OAK,Oakland International,Oakland,CA,West Coast,secondary airport (Bay Area)
+MSY,Louis Armstrong New Orleans International,New Orleans,LA,South,coastal weather
+SAT,San Antonio International,San Antonio,TX,South,large metro airport
+CLE,Cleveland Hopkins International,Cleveland,OH,Midwest,snow/winter weather; coastal (Lake Erie)
+PIT,Pittsburgh International,Pittsburgh,PA,Northeast,snow/winter weather
+IND,Indianapolis International,Indianapolis,IN,Midwest,large metro airport
+CMH,John Glenn Columbus International,Columbus,OH,Midwest,large metro airport
+MCI,Kansas City International,Kansas City,MO,Midwest,large metro airport
