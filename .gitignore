@@ -13,6 +13,7 @@ __pycache__/
 .venv-dbt/
 .venv-dashboard/
 .venv-cloud-test/
+.venv-ml/
 venv/
 env/
 *.egg-info/
@@ -58,3 +59,8 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# ML (large extracts + fitted models; keep small artifacts)
+ml/data/
+ml/models/
+ml/artifacts/optuna_study.pkl

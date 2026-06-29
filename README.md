@@ -23,7 +23,8 @@ Built with **Airflow · Postgres · dbt · Docker · Streamlit** — **15.7M-fli
 | **Airport × Hour** | [Open page →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Airport_Hour) |
 | **Weather Buckets** | [Open page →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Weather_Buckets) |
 | **Carrier Routes** | [Open page →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Carrier_Routes) |
-| **Mode** | Parquet demo — Jan 2025 agg marts, no Postgres required |
+| **Delay Risk Model** | Local / after deploy — ML holdout metrics (2025) |
+| **Mode** | Parquet demo — Jan 2025 agg marts + precomputed ML artifacts |
 | **Local** | `make dashboard` → http://localhost:8501 |
 
 Verified live: executive snapshot (1,000 airport-hour buckets · 6,273 routes), precip lift chart, all three analytic pages load.
@@ -37,6 +38,7 @@ Verified live: executive snapshot (1,000 airport-hour buckets · 6,273 routes), 
 - **Orchestration** — Airflow DAGs for BTS and weather ingest with idempotent loads + `meta.*` audit logs
 - **Tested marts** — 33/33 bulletproof checks locally; **GitHub Actions CI** runs the same critical dbt tests on Jan 2025 sample
 - **Interactive dashboard** — airport×hour curves, weather buckets, carrier route scatter + leaderboard
+- **ML (optional)** — departure delay classifier on **9.96M train / 4.97M test** flights; **PR-AUC 0.47 vs 0.22 baseline** on 2025 holdout ([`docs/ML.md`](docs/ML.md))
 
 ---
 
@@ -211,6 +213,7 @@ docs/                   architecture, data dictionary, checklists
 | `make dbt-run-marts` | Build marts layer |
 | `make dbt-bulletproof-jan2025` | Critical test pass on Jan 2025 (local Docker) |
 | `make ci-dbt-test-jan2025` | Same critical tests (Postgres on localhost) |
+| `make train-delay-model-day2` | Final train + 2025 holdout eval + ML demo export |
 | `make dashboard` | Run Streamlit locally |
 | `make export-dashboard-demo` | Export agg marts → parquet for Cloud |
 

@@ -1,0 +1,17 @@
+{
+  "trained_at_utc": "2026-06-29T15:54:46.232904+00:00",
+  "train_rows": 9961606,
+  "test_rows_held_out": 4967395,
+  "train_positive_rate": 0.2151,
+  "feature_set": "full",
+  "best_params": {
+    "max_depth": 7,
+    "learning_rate": 0.17254716573280354,
+    "max_iter": 250,
+    "min_samples_leaf": 130,
+    "l2_regularization": 0.0006026889128682511,
+    "random_state": 42
+  },
+  "model_path": "/Users/rohitmarathe/AeroDelay_Intel_Pipeline/ml/models/final_hgb.joblib",
+  "train_subsample": null
+}

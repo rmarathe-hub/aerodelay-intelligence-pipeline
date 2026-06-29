@@ -1,0 +1,37 @@
+{
+  "summaries": [
+    {
+      "split": "train_2023_2024",
+      "rows": 9961606,
+      "positive_rate": 0.2151,
+      "months": 24,
+      "origins": 44,
+      "airlines": 15,
+      "missing_wind_pct": 0.0616,
+      "missing_precip_pct": 0.8907
+    },
+    {
+      "split": "test_2025",
+      "rows": 4967395,
+      "positive_rate": 0.2249,
+      "months": 12,
+      "origins": 44,
+      "airlines": 14,
+      "missing_wind_pct": 0.0766,
+      "missing_precip_pct": 0.8948
+    }
+  ],
+  "train_by_year": [
+    {
+      "year": "2023",
+      "rows": 4917321,
+      "positive_rate": 0.2142
+    },
+    {
+      "year": "2024",
+      "rows": 5044285,
+      "positive_rate": 0.2161
+    }
+  ],
+  "target_column": "target"
+}

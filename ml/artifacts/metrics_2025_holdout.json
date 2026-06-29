@@ -1,0 +1,28 @@
+{
+  "split": "train 2023-2024, test 2025 (single holdout)",
+  "train_rows": 9961606,
+  "test_rows": 4967395,
+  "baseline_positive_rate": 0.2151,
+  "baseline": {
+    "pr_auc": 0.22488024407159085,
+    "roc_auc": 0.5,
+    "brier": 0.17440442671584638,
+    "positive_rate": 0.22488024407159085,
+    "n_rows": 4967395.0,
+    "precision_at_recall_50": 0.22488024407159085,
+    "lift_at_top_decile": 1.0
+  },
+  "hgb_tuned": {
+    "pr_auc": 0.47022739693719073,
+    "roc_auc": 0.7311522241638436,
+    "brier": 0.15103208860046471,
+    "positive_rate": 0.22488024407159085,
+    "n_rows": 4967395.0,
+    "precision_at_recall_50": 0.421232561612243,
+    "lift_at_top_decile": 2.4896736017273455
+  },
+  "lift": {
+    "pr_auc_absolute": 0.2453,
+    "pr_auc_relative_pct": 109.1
+  }
+}

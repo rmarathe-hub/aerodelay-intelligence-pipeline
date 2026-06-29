@@ -1,4 +1,4 @@
-.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather inventory-mac-data check-materialization-ready materialize-monthly materialize-downstream validate-full-materialization materialize-full-local materialize-2025-local materialize-q1-2025-local dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025 dbt-docs dashboard-deps dashboard export-dashboard-demo verify-dashboard-cloud ci-setup-postgres ci-load-jan2025 ci-dbt-test-jan2025
+.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather inventory-mac-data check-materialization-ready materialize-monthly materialize-downstream validate-full-materialization materialize-full-local materialize-2025-local materialize-q1-2025-local dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025 dbt-docs dashboard-deps dashboard export-dashboard-demo verify-dashboard-cloud ci-setup-postgres ci-load-jan2025 ci-dbt-test-jan2025 ml-deps ml-extract ml-eda ml-cv ml-tune ml-ablation train-delay-model-day1 ml-train-final ml-evaluate export-ml-demo train-delay-model-day2
 
 up:
 	bash scripts/dev_up.sh
@@ -135,3 +135,41 @@ ci-load-jan2025:
 
 ci-dbt-test-jan2025:
 	bash scripts/ci_dbt_test_jan2025.sh
+
+ml-deps:
+	@if [[ ! -x .venv-ml/bin/python ]]; then \
+		python3 -m venv .venv-ml && \
+		.venv-ml/bin/pip install -q --upgrade pip && \
+		.venv-ml/bin/pip install -q -r ml/requirements.txt; \
+	fi
+	@echo "ML venv ready: .venv-ml"
+
+ml-extract: ml-deps
+	PYTHONPATH=. .venv-ml/bin/python ml/extract.py
+
+ml-eda: ml-deps
+	PYTHONPATH=. .venv-ml/bin/python ml/eda.py
+
+ml-cv: ml-deps
+	PYTHONPATH=. .venv-ml/bin/python ml/cv.py
+
+ml-tune: ml-deps
+	PYTHONPATH=. .venv-ml/bin/python ml/tune.py
+
+ml-ablation: ml-deps
+	PYTHONPATH=. .venv-ml/bin/python ml/ablation.py
+
+train-delay-model-day1: ml-deps
+	bash scripts/train_delay_model_day1.sh
+
+ml-train-final: ml-deps
+	PYTHONPATH=. .venv-ml/bin/python ml/train.py
+
+ml-evaluate: ml-deps
+	PYTHONPATH=. .venv-ml/bin/python ml/evaluate.py
+
+export-ml-demo:
+	bash scripts/export_ml_demo.sh
+
+train-delay-model-day2: ml-deps
+	bash scripts/train_delay_model_day2.sh

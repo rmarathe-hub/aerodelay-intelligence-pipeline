@@ -50,6 +50,7 @@ with st.sidebar:
     st.page_link("pages/1_Airport_Hour.py", label="Airport × Hour", icon="🕐")
     st.page_link("pages/2_Weather_Buckets.py", label="Weather Buckets", icon="🌧️")
     st.page_link("pages/3_Carrier_Routes.py", label="Carrier Routes", icon="🛫")
+    st.page_link("pages/4_Delay_Risk_Model.py", label="Delay Risk Model", icon="🤖")
 
 if not demo_mode:
     ok_pg, _ = check_postgres_connection(settings)

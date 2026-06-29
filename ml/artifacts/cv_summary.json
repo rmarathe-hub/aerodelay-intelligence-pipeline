@@ -1,0 +1,24 @@
+{
+  "feature_set": "full",
+  "subsample": 500000,
+  "pr_auc_summary": [
+    {
+      "model": "baseline_global_rate",
+      "feature_set": "full",
+      "mean": 0.1975,
+      "std": 0.0238
+    },
+    {
+      "model": "hgb_default",
+      "feature_set": "full",
+      "mean": 0.4025,
+      "std": 0.0656
+    },
+    {
+      "model": "logistic_regression",
+      "feature_set": "full",
+      "mean": 0.3197,
+      "std": 0.049
+    }
+  ]
+}

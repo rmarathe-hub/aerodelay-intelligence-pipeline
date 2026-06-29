@@ -1,0 +1,37 @@
+seed: 42
+target: target
+exclude_origin: HNL
+
+splits:
+  train_year_month_end: "2024-12"
+  test_year_month_start: "2025-01"
+
+extract:
+  chunksize: 500000
+
+cv:
+  subsample: 500000
+  val_subsample: 500000
+  folds:
+    - name: fold1
+      train_end: "2023-12"
+      val_start: "2024-01"
+      val_end: "2024-12"
+    - name: fold2
+      train_end: "2024-06"
+      val_start: "2024-07"
+      val_end: "2024-12"
+    - name: fold3
+      train_end: "2024-09"
+      val_start: "2024-10"
+      val_end: "2024-12"
+
+tune:
+  trials: 30
+  subsample: 1000000
+  timeout_seconds: null
+
+final:
+  train_subsample: null
+  perm_importance_sample: 100000
+  shap_sample: 50000
