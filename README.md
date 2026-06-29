@@ -2,7 +2,13 @@
 
 Production-style ELT pipeline analyzing flight delay risk across 45 major U.S. airports using BTS On-Time Performance data, ASOS/METAR weather, Airflow, dbt, Postgres, Docker, and Streamlit.
 
-**Status:** Ingestion pipeline + dbt staging in place — **partial local data load** (see [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md))
+**Status:** Ingestion + dbt marts + **Streamlit dashboard** — Jan 2025 sample materialized locally; full raw backfill 2023–2025 (see [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md))
+
+## Live demo
+
+> **Deploy:** Follow [`docs/DAY30_CHECKLIST.md`](docs/DAY30_CHECKLIST.md), then paste your URL here:
+>
+> **[AeroDelay Dashboard](https://YOUR-APP.streamlit.app)** — Jan 2025 sample (parquet demo, no Postgres)
 
 ## Stack (local)
 
@@ -10,7 +16,8 @@ Production-style ELT pipeline analyzing flight delay risk across 45 major U.S. a
 |---------|----------------|
 | Postgres 15 | `localhost:5432` (db: `aerodelay`) |
 | Airflow UI | http://localhost:8080 (`admin` / `admin`) |
-| Schemas | `raw`, `meta`, `staging` |
+| Streamlit dashboard | http://localhost:8501 (`make dashboard`) |
+| Schemas | `raw`, `meta`, `staging`, `marts` |
 
 ## Current data coverage (local)
 
@@ -46,6 +53,16 @@ make up
 make check
 ```
 
+## Dashboard (Week 5)
+
+```bash
+make dashboard-deps   # first time only
+make dashboard        # http://localhost:8501
+make verify-dashboard-cloud   # pre-deploy smoke test
+```
+
+Deploy to Streamlit Community Cloud: [`docs/DAY30_CHECKLIST.md`](docs/DAY30_CHECKLIST.md)
+
 ## Day 1 completion checklist
 
 - [ ] `.env` created from `.env.example` (password set, Fernet key set)
@@ -62,7 +79,7 @@ airflow/dags/          Airflow DAGs
 dbt/                   dbt project (Week 1 Day 7)
 ingestion/bts/         BTS download/load (Week 1 Day 3+)
 ingestion/weather/       Weather download/load (Week 1 Day 5+)
-dashboard/             Streamlit (Week 6)
+dashboard/             Streamlit app + demo parquet (Week 5)
 docker/                Postgres init, Airflow image
 docs/                  Data dictionary, architecture
 scripts/               dev_up, health checks

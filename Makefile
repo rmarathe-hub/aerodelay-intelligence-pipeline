@@ -1,4 +1,4 @@
-.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025
+.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025 dashboard-deps dashboard export-dashboard-demo verify-dashboard-cloud
 
 up:
 	bash scripts/dev_up.sh
@@ -72,3 +72,20 @@ dbt-test:
 
 dbt-bulletproof-jan2025:
 	bash scripts/bulletproof_jan2025.sh
+
+dashboard-deps:
+	@if [[ ! -x .venv-dashboard/bin/streamlit ]]; then \
+		python3 -m venv .venv-dashboard && \
+		.venv-dashboard/bin/pip install -q --upgrade pip && \
+		.venv-dashboard/bin/pip install -q -r dashboard/requirements.txt; \
+	fi
+	@echo "Dashboard venv ready: .venv-dashboard"
+
+dashboard:
+	bash scripts/run_dashboard.sh
+
+export-dashboard-demo:
+	bash scripts/export_dashboard_demo.sh
+
+verify-dashboard-cloud:
+	bash scripts/verify_dashboard_cloud.sh
