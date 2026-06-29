@@ -10,7 +10,8 @@ Production-style **ELT pipeline** that joins U.S. flight on-time performance wit
 
 Built with **Airflow · Postgres · dbt · Docker · Streamlit** — **409K-flight Jan 2025 analytics sample** on top of **15.9M flights** and **14.4M weather observations** ingested at raw layer (2023–2025).
 
-**→ [Open live dashboard](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/)** (Streamlit Community Cloud · parquet demo · no login)
+**→ [Open live dashboard](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/)** (Streamlit Community Cloud · parquet demo · no login)  
+**→ [dbt docs](https://rmarathe-hub.github.io/aerodelay-intelligence-pipeline/)** (model lineage · Jan 2025 sample catalog)
 
 ---
 
@@ -232,6 +233,7 @@ docs/                   architecture, data dictionary, checklists
 
 | Doc | Contents |
 |-----|----------|
+| [**dbt docs (GitHub Pages)**](https://rmarathe-hub.github.io/aerodelay-intelligence-pipeline/) | Model lineage, column descriptions (Jan 2025 catalog) |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Pipeline design, schemas, DAG flow |
 | [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md) | Row counts, dev workflow, bulletproof log |
 | [`docs/data_dictionary.md`](docs/data_dictionary.md) | Column-level reference |
