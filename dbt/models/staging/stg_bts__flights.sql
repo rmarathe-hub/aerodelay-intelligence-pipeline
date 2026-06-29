@@ -68,8 +68,12 @@ typed as (
         loaded_at,
         run_id
     from source
+),
+
+filtered as (
+    select * from typed
     where 1 = 1
-        {{ dev_year_month_filter() }}
+        {{ flight_date_window_filter() }}
 ),
 
 with_keys as (
@@ -85,7 +89,7 @@ with_keys as (
                 coalesce(crs_dep_time_local, '')
             )
         ) as flight_id
-    from typed
+    from filtered
 )
 
 select * from with_keys

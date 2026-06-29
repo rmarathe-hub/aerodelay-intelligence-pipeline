@@ -1,4 +1,4 @@
-.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025 dbt-docs dashboard-deps dashboard export-dashboard-demo verify-dashboard-cloud ci-setup-postgres ci-load-jan2025 ci-dbt-test-jan2025
+.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather inventory-mac-data check-materialization-ready materialize-monthly materialize-downstream validate-full-materialization materialize-full-local materialize-2025-local materialize-q1-2025-local dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025 dbt-docs dashboard-deps dashboard export-dashboard-demo verify-dashboard-cloud ci-setup-postgres ci-load-jan2025 ci-dbt-test-jan2025
 
 up:
 	bash scripts/dev_up.sh
@@ -51,6 +51,40 @@ verify-ingest-weather-dag:
 
 backfill-weather:
 	bash scripts/backfill_weather.sh
+
+inventory-mac-data:
+	bash scripts/inventory_mac_data.sh
+
+check-materialization-ready:
+	bash scripts/check_full_materialization_ready.sh
+
+check-materialization-ready-monthly:
+	bash scripts/check_full_materialization_ready.sh --mode monthly --allow-local --stage full
+
+materialize-monthly:
+	bash scripts/materialize_monthly.sh
+
+materialize-downstream:
+	bash scripts/materialize_downstream.sh
+
+validate-full-materialization:
+	bash scripts/validate_full_materialization.sh
+
+materialize-full-local:
+	bash scripts/check_full_materialization_ready.sh --mode monthly --allow-local --stage full
+	bash scripts/materialize_monthly.sh
+	bash scripts/materialize_downstream.sh
+	bash scripts/validate_full_materialization.sh
+
+materialize-2025-local:
+	bash scripts/materialize_monthly.sh --start 2025-01 --end 2025-12 --fresh
+	bash scripts/materialize_downstream.sh
+	bash scripts/validate_full_materialization.sh
+
+materialize-q1-2025-local:
+	bash scripts/materialize_monthly.sh --start 2025-01 --end 2025-03 --fresh
+	bash scripts/materialize_downstream.sh
+	bash scripts/validate_full_materialization.sh
 
 dbt-deps:
 	bash scripts/dbt_run.sh deps

@@ -57,10 +57,10 @@ First build takes ~2–3 minutes.
 Copy the deployed URL and add to README:
 
 ```markdown
-## Live demo
-
-**[AeroDelay Dashboard](https://YOUR-APP.streamlit.app)** — Jan 2025 sample (parquet demo mode)
+**[AeroDelay Dashboard](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/)**
 ```
+
+**Done** — see `docs/DAY33_CHECKLIST.md`
 
 ## Troubleshooting
 

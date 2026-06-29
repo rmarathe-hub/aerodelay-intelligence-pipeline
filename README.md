@@ -8,7 +8,7 @@
 
 Production-style **ELT pipeline** that joins U.S. flight on-time performance with airport weather to analyze **delay risk** across **45 major airports**.
 
-Built with **Airflow · Postgres · dbt · Docker · Streamlit** — **409K-flight Jan 2025 analytics sample** on top of **15.9M flights** and **14.4M weather observations** ingested at raw layer (2023–2025).
+Built with **Airflow · Postgres · dbt · Docker · Streamlit** — **15.7M-flight full marts** (2023–2025) on top of **15.9M flights** and **14.4M weather observations** at raw layer; **409K Jan 2025 sample** for CI and Streamlit Cloud demo.
 
 **→ [Open live dashboard](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/)** (Streamlit Community Cloud · parquet demo · no login)  
 **→ [dbt docs](https://rmarathe-hub.github.io/aerodelay-intelligence-pipeline/)** (model lineage · Jan 2025 sample catalog)
@@ -33,7 +33,7 @@ Verified live: executive snapshot (1,000 airport-hour buckets · 6,273 routes), 
 ## Highlights
 
 - **End-to-end ELT** — BTS + Iowa Mesonet ASOS/METAR → raw Postgres → dbt staging/intermediate/marts
-- **Weather-at-departure join** — nearest METAR within a time window; **95% match rate** on Jan 2025 sample (excl. HNL station mapping issue)
+- **Weather-at-departure join** — nearest METAR within a time window; **~96% match** on full 2023–2025 marts (**95%** on Jan 2025 sample; HNL deferred — station map issue)
 - **Orchestration** — Airflow DAGs for BTS and weather ingest with idempotent loads + `meta.*` audit logs
 - **Tested marts** — 33/33 bulletproof checks locally; **GitHub Actions CI** runs the same critical dbt tests on Jan 2025 sample
 - **Interactive dashboard** — airport×hour curves, weather buckets, carrier route scatter + leaderboard
@@ -111,10 +111,12 @@ Deep dive: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · join logic: [`docs/
 |-------|-------|------|
 | **Raw BTS** | 45 origins · 2023–2025 | **15.9M** |
 | **Raw weather** | 45 stations · 36 months | **14.4M** |
+| **Full marts** | 2023–2025 (`fct_flights`) | **15,752,377** |
+| **Weather match** | Full history (excl. HNL) | **~96%** per month |
 | **dbt dev sample** | Jan 2025 (`dev_year_month`) | **409K** flights |
-| **Agg marts** | Jan 2025 sample | 1K / 634 / 6.3K |
+| **Agg marts (demo)** | Jan 2025 parquet / CI | 1K / 634 / 6.3K |
 
-Full details: [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md)
+Full materialization: [`docs/LOCAL_FULL_MATERIALIZATION.md`](docs/LOCAL_FULL_MATERIALIZATION.md) · row counts: [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md)
 
 ---
 
@@ -204,6 +206,8 @@ docs/                   architecture, data dictionary, checklists
 | `make up` / `make down` | Start / stop Docker stack |
 | `make backfill-bts` | Full BTS raw load (2023–2025) |
 | `make backfill-weather` | Full weather raw load (45×36 months) |
+| `make materialize-full-local` | Monthly incremental full 2023–2025 marts |
+| `make validate-full-materialization` | Row counts, dupes, coverage checks |
 | `make dbt-run-marts` | Build marts layer |
 | `make dbt-bulletproof-jan2025` | Critical test pass on Jan 2025 (local Docker) |
 | `make ci-dbt-test-jan2025` | Same critical tests (Postgres on localhost) |
@@ -223,9 +227,8 @@ docs/                   architecture, data dictionary, checklists
 
 ## Known limitations
 
-- **HNL weather join** — station map uses `HNL`; IEM data is under `PHNL` (0% match until map fix)
-- **Full marts materialization** — 16M-row weather join is deferred locally (hours on Docker Mac); portfolio uses Jan 2025 sample
-- **Streamlit Cloud** — demo mode uses committed parquet; set **Python 3.11** in Advanced settings
+- **HNL weather join** — station map uses `HNL`; IEM data is under `PHNL` (~179K flights, 0% match until map fix)
+- **Streamlit Cloud** — Jan 2025 parquet demo only (not full 15.7M marts); set **Python 3.11** in Advanced settings
 
 ---
 
@@ -235,7 +238,8 @@ docs/                   architecture, data dictionary, checklists
 |-----|----------|
 | [**dbt docs (GitHub Pages)**](https://rmarathe-hub.github.io/aerodelay-intelligence-pipeline/) | Model lineage, column descriptions (Jan 2025 catalog) |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Pipeline design, schemas, DAG flow |
-| [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md) | Row counts, dev workflow, bulletproof log |
+| [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md) | Row counts, full marts proof, dev workflow |
+| [`docs/LOCAL_FULL_MATERIALIZATION.md`](docs/LOCAL_FULL_MATERIALIZATION.md) | Monthly incremental 2023–2025 build |
 | [`docs/data_dictionary.md`](docs/data_dictionary.md) | Column-level reference |
 | [`docs/DAY30_CHECKLIST.md`](docs/DAY30_CHECKLIST.md) | Streamlit Cloud deploy |
 

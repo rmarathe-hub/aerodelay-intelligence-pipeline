@@ -23,7 +23,9 @@ models:
       +schema: intermediate
       +materialized: view
       int_flights__weather_at_departure:
-        +materialized: table
+        +materialized: incremental
+        +unique_key: flight_id
+        +incremental_strategy: delete+insert
     marts:
       +schema: marts
       +materialized: view
@@ -40,3 +42,6 @@ vars:
   weather_join_window_hours: 2
   # Set via --vars '{dev_year_month: "2025-01"}' for local 1-month proof runs
   dev_year_month: null
+  # Monthly materialization windows (half-open [start_date, end_date))
+  start_date: null
+  end_date: null

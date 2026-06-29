@@ -1,7 +1,18 @@
 {% set window_hours = var('weather_join_window_hours') %}
 
+{{
+    config(
+        materialized='incremental',
+        unique_key='flight_id',
+        on_schema_change='append_new_columns',
+        incremental_strategy='delete+insert',
+    )
+}}
+
 with flights as (
     select * from {{ ref('int_flights__departure_context') }}
+    where dep_time_utc is not null
+        {{ dep_time_utc_window_filter() }}
 ),
 
 weather as (

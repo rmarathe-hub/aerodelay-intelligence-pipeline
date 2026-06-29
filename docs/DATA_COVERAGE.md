@@ -8,14 +8,16 @@ Last verified: 2026-06-29
 
 ## Summary
 
-| Layer | Production target | Raw Postgres (full backfill) | dbt dev sample (Jan 2025) |
-|-------|-------------------|------------------------------|---------------------------|
-| **BTS flights** | 45 origins, 2023–2025 | **15.9M rows**, 36 months | **409K rows** (`2025-01`) |
-| **Weather obs** | 45 stations, 36 months | **14.4M rows** | **403K rows** (`2025-01`) |
-| **Join + fct table** | Full history | Not materialized locally | **409K rows** (tables on disk) |
-| **Agg marts** | Full or sample | Views over sample tables | **1K / 634 / 6.3K rows** |
+| Layer | Production target | Raw Postgres (full backfill) | Full marts (local) | dbt dev sample (Jan 2025) |
+|-------|-------------------|------------------------------|--------------------|---------------------------|
+| **BTS flights** | 45 origins, 2023–2025 | **15.9M rows**, 36 months | — | **409K rows** (`2025-01`) |
+| **Weather obs** | 45 stations, 36 months | **14.4M rows** | — | **403K rows** (`2025-01`) |
+| **Join + fct table** | Full history | — | **15,752,377 rows** | **409K rows** |
+| **Agg marts** | Full or sample | Built on full `fct` | Tables on disk | **1K / 634 / 6.3K rows** |
 
-**Raw ingest is complete.** Local dbt iteration uses **`dev_year_month: "2025-01"`** (Plan B) for fast builds (~3 min join, tests in seconds).
+**Raw ingest is complete.** **Full 2023–2025 marts materialized locally** (2026-06-29). CI and fast iteration still use **`dev_year_month: "2025-01"`** (~3 min join, tests in seconds).
+
+Guide: [`LOCAL_FULL_MATERIALIZATION.md`](LOCAL_FULL_MATERIALIZATION.md)
 
 ---
 
@@ -123,13 +125,46 @@ Log: `logs/bulletproof_jan2025.log`
 
 ---
 
-## Full materialization (optional, deferred)
+## Full materialization (2023–2025) — verified 2026-06-29
 
-Full 2023–2025 table materialize on Docker Mac takes **hours** (16M-row weather join). Options:
+Built via monthly incremental dbt (`scripts/materialize_monthly.sh` → `materialize_downstream.sh`).
 
-- Overnight local run with index + RAM bump
-- Paid cloud VM with 8+ GB RAM
-- Keep portfolio on Jan 2025 sample (recommended)
+| Object | Rows |
+|--------|------|
+| `intermediate.int_flights__weather_at_departure` | **15,752,377** |
+| `marts.fct_flights` | **15,752,377** |
+| int ↔ fct delta | **0** |
+| Duplicate `flight_id` | **0** |
+
+### Weather join (full history)
+
+| Metric | Value |
+|--------|-------|
+| Months | **36** (2023-01 → 2025-12) |
+| Match rate | **~96%** every month (95.75%–96.69%) |
+| HNL unmatched | **179,195** flights (**100%** unmatched — `HNL` vs `PHNL` station map) |
+| Other top origins | ~1–3% unmatched (ATL, DFW, DEN, ORD, etc.) |
+
+### Spot dbt tests (full history)
+
+`bash scripts/materialize_downstream.sh` — **7/7 PASS** (agg rate tests, fct consistency, weather join window).
+
+### Reproduce
+
+```bash
+make check-materialization-ready-monthly
+make materialize-full-local    # ~3–8 hr overnight
+make validate-full-materialization
+```
+
+Resume after failure:
+
+```bash
+bash scripts/materialize_monthly.sh --resume-from YYYY-MM
+bash scripts/materialize_downstream.sh
+```
+
+Analyses: `dbt/analyses/materialization_*.sql`
 
 ---
 

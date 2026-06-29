@@ -35,7 +35,12 @@ typed as (
     from source
     where {{ clean_text('station') }} is not null
       and {{ clean_text('valid') }} is not null
-      {{ dev_year_month_filter() }}
+),
+
+filtered as (
+    select * from typed
+    where 1 = 1
+        {{ weather_valid_window_filter() }}
 ),
 
 deduped as (
@@ -45,7 +50,7 @@ deduped as (
             partition by station, valid_utc
             order by loaded_at desc, source_file desc
         ) as row_num
-    from typed
+    from filtered
 )
 
 select

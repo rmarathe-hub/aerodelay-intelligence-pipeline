@@ -81,12 +81,8 @@ gh repo edit rmarathe-hub/aerodelay-intelligence-pipeline \
 Choose how to get raw data onto OCI:
 
 ```bash
-docker compose exec postgres psql -U aerodelay -d aerodelay -c \
-  "SELECT count(*), count(DISTINCT year_month) FROM raw.bts_flights;"
-docker compose exec postgres psql -U aerodelay -d aerodelay -c \
-  "SELECT count(*), count(DISTINCT station || '-' || year_month) FROM raw.weather_observations;"
-du -sh data/raw/bts data/raw/weather 2>/dev/null
-ls data/raw/bts/*.zip 2>/dev/null | wc -l
+make inventory-mac-data
+# See docs/DAY35_CHECKLIST.md for recorded results and decision
 ```
 
 | Result | Path |
@@ -103,9 +99,14 @@ If Option B: `pg_dump -Fc` and note file size.
 
 ### Day 6 — Preflight script
 
-- [ ] Add/run `scripts/check_full_materialization_ready.sh`
-- [ ] Must print: disk, RAM, swap, raw counts, `dev_year_month` unset, planned dbt command
-- [ ] Run locally against Docker Postgres — GO/NO-GO
+```bash
+make check-materialization-ready
+# See docs/DAY36_CHECKLIST.md
+```
+
+- [ ] `scripts/check_full_materialization_ready.sh` — disk, RAM, swap, raw counts, `dev_year_month` unset, planned dbt command
+- [ ] Local Mac: expect DATA GO, RESOURCES NO-GO (OCI is the target host)
+- [ ] OCI after raw load: `--stage 2025` → expect OVERALL GO
 
 **Exit:** Safe to start long OCI jobs without guessing.
 
@@ -115,13 +116,14 @@ If Option B: `pg_dump -Fc` and note file size.
 
 ### Day 7 — Create disposable OCI VM
 
-- [ ] Always Free `VM.Standard.A1.Flex`: **2 OCPU / 12 GB RAM**
-- [ ] 50 GB boot + **~150 GB block volume** (home region, ≤200 GB total)
-- [ ] Ubuntu 22.04, SSH, **16 GB swap**
-- [ ] Install: git, python3, venv, postgresql-15, postgresql-client
-- [ ] **No Airflow** on VM — Postgres + dbt only
+See **`docs/DAY37_CHECKLIST.md`** — OCI console steps + `scripts/oci_vm_bootstrap.sh` on VM.
 
-**Exit:** SSH works.
+- [ ] Always Free `VM.Standard.A1.Flex`: **2 OCPU / 12 GB RAM**
+- [ ] 50 GB boot + **~150 GB block volume**
+- [ ] Ubuntu 22.04, SSH, **16 GB swap**
+- [ ] Bootstrap: Postgres 15, clone repo, schemas (no Airflow)
+
+**Exit:** SSH works + `pg_isready` on VM.
 
 ---
 
