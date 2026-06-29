@@ -1,4 +1,4 @@
-.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025 dashboard-deps dashboard export-dashboard-demo verify-dashboard-cloud
+.PHONY: up down logs ps check shell-postgres fernet env ingest-deps load-bts-sample test-bts-idempotency backfill-bts verify-ingest-bts-dag load-weather-sample test-weather-idempotency verify-ingest-weather-dag backfill-weather dbt-deps dbt-seed dbt-run dbt-run-intermediate dbt-run-marts dbt-test dbt-bulletproof-jan2025 dashboard-deps dashboard export-dashboard-demo verify-dashboard-cloud ci-setup-postgres ci-load-jan2025 ci-dbt-test-jan2025
 
 up:
 	bash scripts/dev_up.sh
@@ -89,3 +89,12 @@ export-dashboard-demo:
 
 verify-dashboard-cloud:
 	bash scripts/verify_dashboard_cloud.sh
+
+ci-setup-postgres:
+	bash scripts/ci_setup_postgres.sh
+
+ci-load-jan2025:
+	bash scripts/ci_load_jan2025_sample.sh
+
+ci-dbt-test-jan2025:
+	bash scripts/ci_dbt_test_jan2025.sh

@@ -1,0 +1,73 @@
+name: dbt CI (Jan 2025)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: dbt-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dbt-jan2025:
+    name: dbt test — Jan 2025 sample
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: aerodelay
+          POSTGRES_PASSWORD: ci_test_password
+          POSTGRES_DB: aerodelay
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aerodelay -d aerodelay"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      POSTGRES_USER: aerodelay
+      POSTGRES_PASSWORD: ci_test_password
+      POSTGRES_DB: aerodelay
+      POSTGRES_HOST: localhost
+      POSTGRES_HOST_LOCAL: localhost
+      POSTGRES_PORT: 5432
+      PYTHONPATH: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            ingestion/requirements.txt
+            dbt/requirements.txt
+
+      - name: Install Postgres client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ingestion/requirements.txt
+          pip install -r dbt/requirements.txt
+
+      - name: Initialize Postgres schemas
+        run: bash scripts/ci_setup_postgres.sh
+
+      - name: Load Jan 2025 sample (BTS + weather)
+        run: bash scripts/ci_load_jan2025_sample.sh
+
+      - name: dbt build + critical tests
+        run: bash scripts/ci_dbt_test_jan2025.sh

@@ -94,6 +94,6 @@ Copy the deployed URL and add to README:
 
 ## Next (Week 6)
 
-- Full README rewrite + architecture diagram
+- Full README rewrite + architecture diagram — **Done** → `docs/DAY31_CHECKLIST.md`
 - GitHub Actions CI (`dbt test` on Jan 2025 sample)
 - Update `docs/DATA_COVERAGE.md` with full backfill stats
