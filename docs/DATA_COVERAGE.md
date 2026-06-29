@@ -115,8 +115,8 @@ Log: `logs/bulletproof_jan2025.log`
 | Task | Command |
 |------|---------|
 | Rebuild sample tables | `bash scripts/dbt_run.sh run --select +int_flights__weather_at_departure fct_flights --full-refresh --vars '{dev_year_month: "2025-01"}' --threads 1` |
-| Run new agg | `bash scripts/dbt_run.sh run --select agg_delay_by_*` |
-| Test aggs only | `bash scripts/dbt_run.sh test --select agg_delay_by_* --threads 1` |
+| Run new agg | `bash scripts/dbt_run.sh run --select agg_delay_by_airport_hour agg_delay_by_weather_bucket agg_delay_by_carrier_route` |
+| Test aggs only | `bash scripts/dbt_run.sh test --select agg_delay_by_airport_hour agg_delay_by_weather_bucket agg_delay_by_carrier_route --threads 1` |
 | Bulletproof pass | `bash scripts/bulletproof_jan2025.sh` |
 
 **Do not** run `make dbt-test` (71 tests) on 16M rows locally.

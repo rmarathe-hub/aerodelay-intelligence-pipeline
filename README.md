@@ -1,10 +1,16 @@
 # AeroDelay Intelligence Pipeline
 
 [![dbt CI](https://github.com/rmarathe-hub/aerodelay-intelligence-pipeline/actions/workflows/dbt-ci.yml/badge.svg)](https://github.com/rmarathe-hub/aerodelay-intelligence-pipeline/actions/workflows/dbt-ci.yml)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![dbt](https://img.shields.io/badge/dbt-1.8-orange)
+![Postgres](https://img.shields.io/badge/postgres-15-blue)
 
 Production-style **ELT pipeline** that joins U.S. flight on-time performance with airport weather to analyze **delay risk** across **45 major airports**.
 
-Built with **Airflow · Postgres · dbt · Docker · Streamlit** — designed for portfolio demos on a Jan 2025 sample, with **15.9M flights** and **14.4M weather observations** ingested at raw layer (2023–2025).
+Built with **Airflow · Postgres · dbt · Docker · Streamlit** — **409K-flight Jan 2025 analytics sample** on top of **15.9M flights** and **14.4M weather observations** ingested at raw layer (2023–2025).
+
+**→ [Open live dashboard](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/)** (Streamlit Community Cloud · parquet demo · no login)
 
 ---
 
@@ -12,9 +18,14 @@ Built with **Airflow · Postgres · dbt · Docker · Streamlit** — designed fo
 
 | | |
 |---|---|
-| **Dashboard** | [AeroDelay on Streamlit Cloud](https://YOUR-APP.streamlit.app) *(replace with your deployed URL)* |
+| **Home** | [aerodelay-intelligence-pipeline.streamlit.app](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/) |
+| **Airport × Hour** | [Open page →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Airport_Hour) |
+| **Weather Buckets** | [Open page →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Weather_Buckets) |
+| **Carrier Routes** | [Open page →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Carrier_Routes) |
 | **Mode** | Parquet demo — Jan 2025 agg marts, no Postgres required |
 | **Local** | `make dashboard` → http://localhost:8501 |
+
+Verified live: executive snapshot (1,000 airport-hour buckets · 6,273 routes), precip lift chart, all three analytic pages load.
 
 ---
 
@@ -108,20 +119,22 @@ Full details: [`docs/DATA_COVERAGE.md`](docs/DATA_COVERAGE.md)
 
 ## Dashboard
 
+**Live:** [streamlit.app](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/) · **Local:** `make dashboard`
+
 Three analytic views over dbt aggregation marts:
 
-| Page | Question answered |
-|------|-------------------|
-| **Airport × Hour** | When do delays spike by origin and UTC hour? |
-| **Weather Buckets** | How do wind, precip, and visibility bins affect delay rate? |
-| **Carrier Routes** | Which airline routes have highest volume vs delay? |
+| Page | Question answered | Live link |
+|------|-------------------|-----------|
+| **Airport × Hour** | When do delays spike by origin and UTC hour? | [View →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Airport_Hour) |
+| **Weather Buckets** | How do wind, precip, and visibility bins affect delay rate? | [View →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Weather_Buckets) |
+| **Carrier Routes** | Which airline routes have highest volume vs delay? | [View →](https://aerodelay-intelligence-pipeline-882usdpsfau5g7ap6yzktj.streamlit.app/Carrier_Routes) |
 
 ```bash
 make dashboard-deps    # first time
 make dashboard         # http://localhost:8501
 ```
 
-Cloud deploy: [`docs/DAY30_CHECKLIST.md`](docs/DAY30_CHECKLIST.md)
+Deploy guide: [`docs/DAY30_CHECKLIST.md`](docs/DAY30_CHECKLIST.md)
 
 ---
 
@@ -148,7 +161,7 @@ make load-weather-sample
 
 ```bash
 bash scripts/dbt_run.sh run \
-  --select +int_flights__weather_at_departure fct_flights agg_delay_by_* \
+  --select +int_flights__weather_at_departure fct_flights agg_delay_by_airport_hour agg_delay_by_weather_bucket agg_delay_by_carrier_route \
   --full-refresh --vars '{dev_year_month: "2025-01"}' --threads 1
 ```
 

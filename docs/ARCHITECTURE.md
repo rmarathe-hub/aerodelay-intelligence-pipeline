@@ -185,7 +185,7 @@ Export: `make export-dashboard-demo`
 | Scope | Command | Duration |
 |-------|---------|----------|
 | Jan 2025 bulletproof | `make dbt-bulletproof-jan2025` | ~6s |
-| Agg tests only | `dbt test --select agg_delay_by_*` | seconds |
+| Agg tests only | `dbt test --select agg_delay_by_airport_hour agg_delay_by_weather_bucket agg_delay_by_carrier_route` | seconds |
 | Full test suite (71 tests) | `make dbt-test` | **avoid on 16M rows locally** |
 
 CI (Week 6 Day 2): GitHub Actions — [`.github/workflows/dbt-ci.yml`](../.github/workflows/dbt-ci.yml) on Jan 2025 sample (~13 critical tests).
